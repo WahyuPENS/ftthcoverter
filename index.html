@@ -1,35 +1,793 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <title>FTTH KML to DXF Converter - Wahyu SBU</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 400px; }
-        h2 { color: #2c3e50; margin-bottom: 20px; }
-        input[type="file"] { margin: 20px 0; border: 1px dashed #3498db; padding: 20px; width: 100%; border-radius: 10px; cursor: pointer; }
-        button { background-color: #3498db; color: white; border: none; padding: 12px 25px; border-radius: 5px; cursor: pointer; font-size: 16px; transition: 0.3s; width: 100%; }
-        button:hover { background-color: #2980b9; transform: translateY(-2px); }
-        .note { margin-top: 15px; font-size: 12px; color: #7f8c8d; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KML Tools — TelkomAkses</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --red: #e3000b;
+  --red-dark: #b80009;
+  --red-light: #ffeaea;
+  --gray-50: #f8f9fa;
+  --gray-100: #f1f3f5;
+  --gray-200: #e9ecef;
+  --gray-400: #adb5bd;
+  --gray-600: #6c757d;
+  --gray-800: #343a40;
+  --gray-900: #212529;
+  --white: #ffffff;
+  --font: 'Inter', sans-serif;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  --shadow-md: 0 8px 24px rgba(0,0,0,0.1), 0 4px 8px rgba(0,0,0,0.05);
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--gray-50);
+  color: var(--gray-900);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── HEADER ── */
+header {
+  background: var(--white);
+  border-bottom: 3px solid var(--red);
+  padding: 0 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 72px;
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo-kml {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.logo-kml-icon {
+  width: 38px; height: 38px;
+  background: var(--red);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.logo-kml-text h1 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--gray-900);
+  line-height: 1.1;
+}
+
+.logo-kml-text p {
+  font-size: 0.72rem;
+  color: var(--gray-600);
+  font-weight: 500;
+  margin-top: 1px;
+}
+
+/* ── HERO STRIPE ── */
+.hero-stripe {
+  background: var(--red);
+  padding: 1.1rem 2.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.hero-stripe h2 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.hero-stripe p {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.78);
+  margin-top: 2px;
+}
+
+.hero-icon {
+  width: 38px; height: 38px;
+  background: rgba(255,255,255,0.18);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── MAIN ── */
+main {
+  flex: 1;
+  padding: 2rem 2.5rem;
+  max-width: 1060px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.section-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--red);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--gray-200);
+}
+
+/* ── GRID ── */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+/* ── CARD ── */
+.card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--gray-200);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.card-header {
+  padding: 1.5rem 1.5rem 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.card-icon-wrap {
+  width: 50px; height: 50px;
+  border-radius: 11px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-size: 1.45rem;
+}
+
+.icon-dxf      { background: #fff3e0; }
+.icon-csv      { background: #f3e5f5; }
+.icon-bantuan  { background: #e3f2fd; }
+.icon-tutorial { background: #e8f5e9; }
+
+.card-meta { flex: 1; }
+
+.card-tag {
+  font-size: 0.63rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.18rem 0.5rem;
+  border-radius: 4px;
+  display: inline-block;
+  margin-bottom: 0.35rem;
+}
+
+.tag-dxf      { background: #fff3e0; color: #e65100; }
+.tag-csv      { background: #f3e5f5; color: #7b1fa2; }
+.tag-bantuan  { background: #e3f2fd; color: #1565c0; }
+.tag-tutorial { background: #e8f5e9; color: #2e7d32; }
+
+.card-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  letter-spacing: -0.02em;
+}
+
+.card-body {
+  padding: 0.75rem 1.5rem;
+  flex: 1;
+}
+
+.card-desc {
+  font-size: 0.79rem;
+  color: var(--gray-600);
+  line-height: 1.65;
+  margin-bottom: 1rem;
+}
+
+/* ── UPLOAD ZONE ── */
+.upload-zone {
+  border: 1.5px dashed #dee2e6;
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.18s;
+  margin-bottom: 0.85rem;
+  background: var(--gray-50);
+}
+
+.upload-zone:hover, .upload-zone.dragover {
+  border-color: var(--red);
+  background: var(--red-light);
+}
+
+.upload-zone.has-file {
+  border-style: solid;
+  border-color: #43a047;
+  background: #f1f8f1;
+}
+
+.upload-icon-emoji { font-size: 1.25rem; margin-bottom: 0.2rem; }
+
+.upload-hint {
+  font-size: 0.74rem;
+  color: var(--gray-600);
+}
+.upload-hint b { color: var(--gray-900); font-weight: 600; }
+
+.upload-filename {
+  font-size: 0.71rem;
+  font-weight: 600;
+  color: #2e7d32;
+  margin-top: 0.2rem;
+}
+
+input[type="file"] { display: none; }
+
+/* ── PROGRESS ── */
+.progress-bar {
+  height: 3px;
+  background: var(--gray-200);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-bottom: 0.7rem;
+  display: none;
+}
+.progress-bar.active { display: block; }
+.progress-fill { height: 100%; border-radius: 99px; width: 0%; transition: width 0.3s ease; }
+
+@keyframes prog-anim { 0%{width:0%} 80%{width:85%} 100%{width:100%} }
+.prog-animate { animation: prog-anim 2s ease-out forwards; }
+
+/* ── CARD FOOTER ── */
+.card-footer { padding: 0 1.5rem 1.5rem; }
+
+/* ── BUTTON ── */
+.btn {
+  width: 100%;
+  padding: 0.65rem 1rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: opacity 0.15s, transform 0.1s, box-shadow 0.15s;
+  letter-spacing: 0.01em;
+}
+
+.btn:hover   { opacity: 0.88; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+.btn:active  { transform: scale(0.98); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+
+.btn-dxf      { background: #f57c00; color: #fff; }
+.btn-csv      { background: #7b1fa2; color: #fff; }
+.btn-bantuan  { background: #1565c0; color: #fff; }
+.btn-tutorial { background: #2e7d32; color: #fff; }
+
+.status {
+  font-size: 0.7rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+  text-align: center;
+  min-height: 1rem;
+}
+.status.loading { color: var(--gray-600); }
+.status.success { color: #2e7d32; }
+.status.error   { color: var(--red); }
+
+/* ── LINK LIST ── */
+.link-list { display: flex; flex-direction: column; gap: 0.48rem; margin-bottom: 0.85rem; }
+
+.link-item {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.6rem 0.85rem;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.79rem;
+  color: var(--gray-800);
+  font-weight: 500;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.link-item:hover { border-color: #1565c0; background: #e3f2fd; color: #1565c0; }
+
+.link-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #1565c0;
+  flex-shrink: 0;
+}
+
+/* ── TUTORIAL LIST ── */
+.tutorial-list { display: flex; flex-direction: column; gap: 0.45rem; margin-bottom: 0.85rem; }
+
+.tutorial-item {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.55rem 0.85rem;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.79rem;
+  color: var(--gray-800);
+  font-weight: 500;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.tutorial-item:hover { border-color: #2e7d32; background: #e8f5e9; color: #2e7d32; }
+
+.tutorial-num {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: #e8f5e9;
+  color: #2e7d32;
+  font-size: 0.68rem;
+  font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── FOOTER ── */
+footer {
+  text-align: center;
+  padding: 1.1rem;
+  border-top: 1px solid var(--gray-200);
+  font-size: 0.72rem;
+  color: var(--gray-600);
+  background: var(--white);
+}
+
+/* ── SPINNER ── */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner {
+  width: 13px; height: 13px;
+  border: 2px solid rgba(255,255,255,0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  display: inline-block;
+}
+
+/* ── MODAL ── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.42);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 2rem;
+  max-width: 460px;
+  width: 90%;
+  position: relative;
+  box-shadow: var(--shadow-md);
+  border-top: 3px solid var(--red);
+}
+
+.modal-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--gray-900);
+}
+
+.modal-content {
+  font-size: 0.81rem;
+  color: var(--gray-600);
+  line-height: 1.75;
+}
+
+.modal-content b { color: var(--gray-900); }
+
+.modal-close {
+  position: absolute;
+  top: 1rem; right: 1rem;
+  background: var(--gray-100);
+  border: 1px solid var(--gray-200);
+  border-radius: 6px;
+  padding: 0.25rem 0.6rem;
+  cursor: pointer;
+  color: var(--gray-600);
+  font-size: 0.74rem;
+  font-family: var(--font);
+  font-weight: 600;
+  transition: background 0.15s;
+}
+.modal-close:hover { background: var(--gray-200); color: var(--gray-900); }
+</style>
 </head>
 <body>
 
-    <div class="card">
-        <h2>FTTH Converter 🚀</h2>
-        <p>Silakan upload file KML untuk dikonversi ke AutoCAD (DXF).</p>
-        
-        <!-- Alamat Ngrok Kamu yang Paling Baru -->
-        <form action="https://2bd4-103-189-201-71.ngrok-free.app/api/upload_kml" method="post" enctype="multipart/form-data">
-            <input type="file" name="file" accept=".kml" required>
-            <br>
-            <button type="submit">Upload & Konversi Sekarang!</button>
-        </form>
+<!-- ══ HEADER ══ -->
+<header>
+  <div class="logo-kml">
+    <div class="logo-kml-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+      </svg>
+    </div>
+    <div class="logo-kml-text">
+      <h1>KML Tools</h1>
+      <p>Selamat Datang, Tim SDI</p>
+    </div>
+  </div>
 
-        <div class="note">
-            Pastikan Terminal Ngrok di Debian tetap menyala ya!
+  <img src="https://upload.wikimedia.org/wikipedia/commons/b/bc/Telkom_Akses_logo.svg" alt="TelkomAkses" style="height:52px;width:auto;">
+</header>
+
+<!-- ══ HERO STRIPE ══ -->
+<div class="hero-stripe">
+  <div class="hero-icon">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
+    </svg>
+  </div>
+  <div>
+    <h2>Konversi & Utilitas KML</h2>
+    <p>Upload file KML dan pilih format output yang dibutuhkan. Backend sudah terhubung melalui Ngrok.</p>
+  </div>
+</div>
+
+<!-- ══ MAIN ══ -->
+<main>
+  <p class="section-label">Pilih Fungsi</p>
+  <div class="grid">
+
+    <!-- KML KE DXF -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon-wrap icon-dxf">🗂️</div>
+        <div class="card-meta">
+          <span class="card-tag tag-dxf">DXF</span>
+          <div class="card-title">KML ke DXF</div>
         </div>
+      </div>
+      <div class="card-body">
+        <p class="card-desc">Konversi file KML ke format DXF (AutoCAD). Cocok untuk kebutuhan drafting dan engineering lapangan.</p>
+        <div class="upload-zone" id="zone-dxf"
+          onclick="document.getElementById('file-dxf').click()"
+          ondragover="handleDrag(event,'zone-dxf')"
+          ondragleave="handleDragLeave('zone-dxf')"
+          ondrop="handleDrop(event,'dxf')">
+          <div class="upload-icon-emoji">📁</div>
+          <div class="upload-hint"><b>Klik atau drag</b> file .kml di sini</div>
+          <div class="upload-filename" id="name-dxf"></div>
+        </div>
+        <input type="file" id="file-dxf" accept=".kml" onchange="fileSelected('dxf')">
+        <div class="progress-bar" id="prog-dxf"><div class="progress-fill" id="fill-dxf" style="background:#f57c00;"></div></div>
+      </div>
+      <div class="card-footer">
+        <button class="btn btn-dxf" id="btn-dxf" onclick="convert('dxf')" disabled>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Konversi ke DXF
+        </button>
+        <div class="status" id="status-dxf"></div>
+      </div>
     </div>
 
+    <!-- KML KE CSV -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon-wrap icon-csv">📊</div>
+        <div class="card-meta">
+          <span class="card-tag tag-csv">CSV</span>
+          <div class="card-title">KML ke CSV</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p class="card-desc">Ekstrak koordinat dan atribut dari file KML ke format CSV untuk analisis data dan spreadsheet.</p>
+        <div class="upload-zone" id="zone-csv"
+          onclick="document.getElementById('file-csv').click()"
+          ondragover="handleDrag(event,'zone-csv')"
+          ondragleave="handleDragLeave('zone-csv')"
+          ondrop="handleDrop(event,'csv')">
+          <div class="upload-icon-emoji">📁</div>
+          <div class="upload-hint"><b>Klik atau drag</b> file .kml di sini</div>
+          <div class="upload-filename" id="name-csv"></div>
+        </div>
+        <input type="file" id="file-csv" accept=".kml" onchange="fileSelected('csv')">
+        <div class="progress-bar" id="prog-csv"><div class="progress-fill" id="fill-csv" style="background:#7b1fa2;"></div></div>
+      </div>
+      <div class="card-footer">
+        <button class="btn btn-csv" id="btn-csv" onclick="convert('csv')" disabled>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Konversi ke CSV
+        </button>
+        <div class="status" id="status-csv"></div>
+      </div>
+    </div>
+
+    <!-- BANTUAN -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon-wrap icon-bantuan">❓</div>
+        <div class="card-meta">
+          <span class="card-tag tag-bantuan">SHP · Bantuan</span>
+          <div class="card-title">Bantuan</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p class="card-desc">Panduan penggunaan tools, format file yang didukung, dan troubleshooting umum.</p>
+        <div class="link-list">
+          <div class="link-item" onclick="openModal('modal-format')">
+            <div class="link-dot"></div>
+            <span>Format file yang didukung</span>
+          </div>
+          <div class="link-item" onclick="openModal('modal-cara')">
+            <div class="link-dot"></div>
+            <span>Cara penggunaan KML Tools</span>
+          </div>
+          <div class="link-item" onclick="openModal('modal-trouble')">
+            <div class="link-dot"></div>
+            <span>Troubleshooting & FAQ</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer">
+        <button class="btn btn-bantuan" onclick="openModal('modal-format')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Buka Panduan
+        </button>
+      </div>
+    </div>
+
+    <!-- TUTORIAL DOWNLOAD -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon-wrap icon-tutorial">🎓</div>
+        <div class="card-meta">
+          <span class="card-tag tag-tutorial">Tutorial</span>
+          <div class="card-title">Tutorial Download</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p class="card-desc">Unduh panduan, template, dan file contoh KML untuk referensi penggunaan tools ini.</p>
+        <div class="tutorial-list">
+          <div class="tutorial-item" onclick="downloadTutorial('panduan-pdf')">
+            <div class="tutorial-num">1</div>
+            <span>Panduan Lengkap (PDF)</span>
+          </div>
+          <div class="tutorial-item" onclick="downloadTutorial('contoh-kml')">
+            <div class="tutorial-num">2</div>
+            <span>Contoh File KML</span>
+          </div>
+          <div class="tutorial-item" onclick="downloadTutorial('template-csv')">
+            <div class="tutorial-num">3</div>
+            <span>Template Output CSV</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer">
+        <button class="btn btn-tutorial" onclick="downloadTutorial('semua')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download Semua Tutorial
+        </button>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<footer>KML Tools @2026 &mdash; TelkomAkses &mdash; Tim SDI</footer>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modal-format" onclick="closeModalBg(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-format')">✕ tutup</button>
+    <h3 class="modal-title">📋 Format yang Didukung</h3>
+    <div class="modal-content">
+      <p><b>Input:</b> File KML (.kml) — export dari Google Earth atau QGIS</p><br>
+      <p><b>Output DXF:</b> AutoCAD 2010+ (.dxf) — kompatibel dengan AutoCAD, BricsCAD, ZWCAD</p><br>
+      <p><b>Output CSV:</b> UTF-8 CSV — kolom: Name, Latitude, Longitude, Elevation, Description</p><br>
+      <p style="color:#2e7d32;font-weight:600;">Ukuran file maksimal: 50MB per upload.</p>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-cara" onclick="closeModalBg(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-cara')">✕ tutup</button>
+    <h3 class="modal-title">🗺️ Cara Penggunaan</h3>
+    <div class="modal-content">
+      <p>1. Pilih fungsi yang dibutuhkan (KML ke DXF atau KML ke CSV)</p><br>
+      <p>2. Upload file KML dengan klik area upload atau drag & drop</p><br>
+      <p>3. Klik tombol <b>Konversi</b> dan tunggu proses selesai</p><br>
+      <p>4. File hasil konversi akan otomatis terunduh ke komputer Anda</p><br>
+      <p style="color:#1565c0;font-weight:600;">Pastikan file KML memiliki koordinat yang valid.</p>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-trouble" onclick="closeModalBg(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-trouble')">✕ tutup</button>
+    <h3 class="modal-title">🔧 Troubleshooting & FAQ</h3>
+    <div class="modal-content">
+      <p><b>File tidak bisa diupload?</b><br>Pastikan ekstensi .kml dan ukuran di bawah 50MB.</p><br>
+      <p><b>Konversi gagal?</b><br>File KML mungkin format tidak standar. Coba export ulang dari QGIS atau Google Earth.</p><br>
+      <p><b>Koordinat tidak muncul di CSV?</b><br>Periksa apakah KML memiliki elemen &lt;coordinates&gt; yang valid.</p><br>
+      <p style="color:#e3000b;font-weight:600;">Hubungi Tim SDI untuk bantuan lebih lanjut.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const files = {};
+
+// GANTI DENGAN LINK NGROK AKTIF ANDA
+const ngrokUrl = "https://2bd4-103-189-201-71.ngrok-free.app";
+
+function fileSelected(type) {
+  const input = document.getElementById('file-' + type);
+  const file = input.files[0];
+  if (!file) return;
+  files[type] = file;
+  document.getElementById('zone-' + type).classList.add('has-file');
+  document.getElementById('name-' + type).textContent = '✓ ' + file.name;
+  document.getElementById('btn-' + type).disabled = false;
+  setStatus(type, '', '');
+}
+
+function handleDrag(e, zoneId) {
+  e.preventDefault();
+  document.getElementById(zoneId).classList.add('dragover');
+}
+
+function handleDragLeave(zoneId) {
+  document.getElementById(zoneId).classList.remove('dragover');
+}
+
+function handleDrop(e, type) {
+  e.preventDefault();
+  document.getElementById('zone-' + type).classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (!file || !file.name.endsWith('.kml')) {
+    setStatus(type, 'error', '✕ Hanya file .kml yang diterima');
+    return;
+  }
+  const dt = new DataTransfer();
+  dt.items.add(file);
+  document.getElementById('file-' + type).files = dt.files;
+  fileSelected(type);
+}
+
+function setStatus(type, cls, msg) {
+  const el = document.getElementById('status-' + type);
+  el.className = 'status ' + cls;
+  el.innerHTML = msg;
+}
+
+function showProgress(type) {
+  const bar = document.getElementById('prog-' + type);
+  const fill = document.getElementById('fill-' + type);
+  bar.classList.add('active');
+  fill.style.width = '0%';
+  setTimeout(() => fill.classList.add('prog-animate'), 10);
+}
+
+function hideProgress(type) {
+  const fill = document.getElementById('fill-' + type);
+  fill.style.width = '100%';
+  setTimeout(() => {
+    document.getElementById('prog-' + type).classList.remove('active');
+    fill.classList.remove('prog-animate');
+    fill.style.width = '0%';
+  }, 400);
+}
+
+async function convert(type) {
+  const file = files[type];
+  if (!file) return;
+  const btn = document.getElementById('btn-' + type);
+  const origHTML = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Memproses...';
+  setStatus(type, 'loading', '⏳ Mengkonversi file...');
+  showProgress(type);
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    // ROUTE SESUAI DENGAN BACKEND (app.py)
+    const endpoint = type === 'dxf' ? `${ngrokUrl}/api/upload_kml` : `${ngrokUrl}/api/kml-to-csv`;
+    
+    const res = await fetch(endpoint, { method: 'POST', body: formData });
+    if (!res.ok) throw new Error(await res.text() || 'Konversi gagal');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = file.name.replace('.kml', '.' + type);
+    a.click();
+    URL.revokeObjectURL(url);
+    hideProgress(type);
+    setStatus(type, 'success', '✓ Berhasil! File ' + type.toUpperCase() + ' sedang diunduh.');
+  } catch (err) {
+    hideProgress(type);
+    setStatus(type, 'error', '✕ ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = origHTML;
+  }
+}
+
+function downloadTutorial(item) {
+  const urls = {
+    'panduan-pdf':  '#',
+    'contoh-kml':   '#',
+    'template-csv': '#',
+    'semua':        '#'
+  };
+  const a = document.createElement('a');
+  a.href = urls[item] || '#';
+  a.download = '';
+  a.click();
+}
+
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function closeModalBg(e) {
+  if (e.target.classList.contains('modal-overlay')) e.target.classList.remove('open');
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape')
+    document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+});
+</script>
 </body>
 </html>
