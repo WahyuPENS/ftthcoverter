@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>FTTH KML to DXF Converter - Wahyu SBU</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 400px; }
+        h2 { color: #2c3e50; margin-bottom: 20px; }
+        input[type="file"] { margin: 20px 0; border: 1px dashed #3498db; padding: 20px; width: 100%; border-radius: 10px; cursor: pointer; }
+        button { background-color: #3498db; color: white; border: none; padding: 12px 25px; border-radius: 5px; cursor: pointer; font-size: 16px; transition: 0.3s; width: 100%; }
+        button:hover { background-color: #2980b9; transform: translateY(-2px); }
+        .note { margin-top: 15px; font-size: 12px; color: #7f8c8d; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>FTTH Converter 🚀</h2>
+        <p>Silakan upload file KML untuk dikonversi ke AutoCAD (DXF).</p>
+        
+        <!-- Alamat Ngrok Kamu yang Paling Baru -->
+        <form action="https://2bd4-103-189-201-71.ngrok-free.app/api/upload_kml" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" accept=".kml" required>
+            <br>
+            <button type="submit">Upload & Konversi Sekarang!</button>
+        </form>
+
+        <div class="note">
+            Pastikan Terminal Ngrok di Debian tetap menyala ya!
+        </div>
+    </div>
+
+</body>
+</html>
