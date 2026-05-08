@@ -620,7 +620,7 @@ footer {
   </div>
 </main>
 
-<footer>KML Tools @2026 &mdash; TelkomAkses &mdash; Tim SDI; PKL PENS 2026(Wahyu,Rafi,Devi)</footer>
+<footer>KML Tools @2026 &mdash; TelkomAkses &mdash; Tim SDI; PKL PENS; </footer>
 
 <!-- MODALS -->
 <div class="modal-overlay" id="modal-format" onclick="closeModalBg(event)">
@@ -630,7 +630,7 @@ footer {
     <div class="modal-content">
       <p><b>Input:</b> File KML (.kml) — export dari Google Earth atau QGIS</p><br>
       <p><b>Output DXF:</b> AutoCAD 2010+ (.dxf) — kompatibel dengan AutoCAD, BricsCAD, ZWCAD</p><br>
-      <p><b>Output CSV:</b> UTF-8 CSV — kolom: Name, Latitude, Longitude, Elevation, Description</p><br>
+      <p><b>Output CSV:</b> UTF-8 CSV — kolom: Type, Name, Longitude, Latitude, Vertices, Color_ACI, Description</p><br>
       <p style="color:#2e7d32;font-weight:600;">Ukuran file maksimal: 50MB per upload.</p>
     </div>
   </div>
@@ -666,8 +666,32 @@ footer {
 <script>
 const files = {};
 
+// ── Health check saat halaman dibuka ──
+(async () => {
+  try {
+    const res = await fetch(`${ngrokUrl}/api/health`, {
+      headers: { 'ngrok-skip-browser-warning': 'true' }
+    });
+    if (res.ok) {
+      const d = await res.json();
+      const stripe = document.querySelector('.hero-stripe p');
+      if (stripe) {
+        const shpOk = d.shapefile_roads && d.shapefile_buildings;
+        const tplOk = d.template_dxf;
+        stripe.innerHTML =
+          'Backend terhubung ✓ &nbsp;|&nbsp; ' +
+          'Shapefile: ' + (shpOk ? '✓' : '⚠ tidak ditemukan') + ' &nbsp;|&nbsp; ' +
+          'Template DXF: ' + (tplOk ? '✓' : '⚠ tidak ditemukan');
+      }
+    }
+  } catch {
+    const stripe = document.querySelector('.hero-stripe p');
+    if (stripe) stripe.textContent = '⚠ Backend tidak terjangkau — pastikan ngrok aktif';
+  }
+})();
+
 // GANTI DENGAN LINK NGROK AKTIF ANDA
-const ngrokUrl = "https://ffa6-2404-c0-b602-282e-d08-2ca9-9e0d-bbf8.ngrok-free.app";
+const ngrokUrl = "https://48d5-103-189-201-71.ngrok-free.app";
 
 function fileSelected(type) {
   const input = document.getElementById('file-' + type);
@@ -743,13 +767,41 @@ async function convert(type) {
   try {
     // ROUTE SESUAI DENGAN BACKEND (app.py)
     const endpoint = type === 'dxf' ? `${ngrokUrl}/api/upload_kml` : `${ngrokUrl}/api/kml-to-csv`;
-    const res = await fetch(endpoint, { method: 'POST', body: formData });
-    if (!res.ok) throw new Error(await res.text() || 'Konversi gagal');
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'ngrok-skip-browser-warning': 'true'  // bypass halaman warning ngrok free
+      }
+    });
+
+    if (!res.ok) {
+      // Backend kirim JSON error → parse dulu
+      let errMsg = 'Konversi gagal';
+      try {
+        const errData = await res.json();
+        errMsg = errData.error || errMsg;
+      } catch {
+        errMsg = await res.text() || errMsg;
+      }
+      throw new Error(errMsg);
+    }
+
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = file.name.replace('.kml', '.' + type);
+
+    // Backend mengembalikan nama file "hasil_xxx.dxf" / "xxx.csv"
+    // Ambil dari Content-Disposition jika ada, fallback ke nama manual
+    const disposition = res.headers.get('Content-Disposition') || '';
+    const nameMatch = disposition.match(/filename[^;=\n]*=(['"]*)(.*?)\1/);
+    a.download = nameMatch ? nameMatch[2] : (
+      type === 'dxf'
+        ? 'hasil_' + file.name.replace('.kml', '.dxf')
+        : file.name.replace('.kml', '.csv')
+    );
+
     a.click();
     URL.revokeObjectURL(url);
     hideProgress(type);
